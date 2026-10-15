@@ -10,6 +10,15 @@
 
 ## Часть 1 — Запусти напрямую
 
+Открываем `LabSolution` и выполняем `dotnet run --project LabApi` (сборка `LabApi.csproj` и запуск).
+![LabApiStart](Images/Part1/LabApiStart.png)
+
+Делаем запрос `http://localhost:5232/health`.
+![HealthRequest](Images/Part1/HealthRequest.png)
+
+Находим PID процесса — **2992** (на первом скрине в логах тоже можно найти).
+![ProcessStatus](Images/Part1/ProcessStatus.png)
+
 ## Часть 2 — namespaces
 
 ## Часть 3 — cgroups
