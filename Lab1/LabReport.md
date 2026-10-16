@@ -24,7 +24,7 @@
 
 Далее изолированно (изолируем видимость некоторых вещей) меняем имя хоста, поднимаем интерфейс `lo` и запускаем апи командой:
 
-```
+```bash
 unshare \
   --pid --fork \
   --mount --mount-proc \
@@ -56,6 +56,45 @@ unshare \
 ![InsideProcess.png](Images/Part2/InsideProcess.png)
 
 ## Часть 3 — cgroups
+Создаём cgroup `lab-api` и добавляем лимиты на memory — 256 МиБ, cpu — половина ядра, pids — 64 задачи и запрещаем swap данных:
+
+```bash
+CG=/sys/fs/cgroup/lab-api
+
+sudo mkdir -p "$CG"
+
+echo '+cpu +memory +pids' | sudo tee /sys/fs/cgroup/cgroup.subtree_control
+
+echo 268435456 | sudo tee "$CG/memory.max"
+echo '50000 100000' | sudo tee "$CG/cpu.max"
+echo 64 | sudo tee "$CG/pids.max"
+
+echo 0 | sudo tee "$CG/memory.swap.max"
+```
+
+Запускаем наше апи как в части 1, узнаём его PID и помещаем в созданную группу:
+
+```bash
+API_PID=1655
+echo "$API_PID" | sudo tee "$CG/cgroup.procs"
+```
+
+Шлём запрос `http://localhost:5232/eat?mb=512` (512 > 256) и наблюдаем, что процесс умер и показатели `oom` и `oom_kill` увеличиваются.
+![OOM.png](Images/Part3/OOM.png)
+
+Как в прошлый раз запускаем апи, обновляем `API_PID`, помещаем в группу, отправляем запрос `http://localhost:5232/burn` и наблюдаем throttling (изменение показателей `nr_throttled` и `throttled_usec`).
+![Throttling.png](Images/Part3/Throttling.png)
+
+Запускаем форк-бомбу командой: 
+```bash
+sudo bash -c '
+  echo $$ > "$1/cgroup.procs" &&
+  exec stress-ng --fork 1 --fork-max 128 --timeout 10s --metrics-brief
+' _ "$CG"
+```
+
+Видим, что ядро 7177 раз отказало в создании новой задачи.
+![ForkBomb.png](Images/Part3/ForkBomb.png)
 
 ## Часть 4 — права
 
