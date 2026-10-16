@@ -13,7 +13,7 @@
 Открываем `LabSolution` и выполняем `dotnet run --project LabApi` (сборка `LabApi.csproj` и запуск).
 ![LabApiStart](Images/Part1/LabApiStart.png)
 
-Делаем запрос `http://localhost:5232/health`.
+Делаем запрос `/health`.
 ![HealthRequest](Images/Part1/HealthRequest.png)
 
 Находим PID процесса — **2992** (на первом скрине в логах тоже можно найти).
@@ -79,10 +79,10 @@ API_PID=1655
 echo "$API_PID" | sudo tee "$CG/cgroup.procs"
 ```
 
-Шлём запрос `http://localhost:5232/eat?mb=512` (512 > 256) и наблюдаем, что процесс умер и показатели `oom` и `oom_kill` увеличиваются.
+Шлём запрос `/eat?mb=512` (512 > 256) и наблюдаем, что процесс умер и показатели `oom` и `oom_kill` увеличиваются.
 ![OOM.png](Images/Part3/OOM.png)
 
-Как в прошлый раз запускаем апи, обновляем `API_PID`, помещаем в группу, отправляем запрос `http://localhost:5232/burn` и наблюдаем throttling (изменение показателей `nr_throttled` и `throttled_usec`).
+Как в прошлый раз запускаем апи, обновляем `API_PID`, помещаем в группу, отправляем запрос `/burn` и наблюдаем throttling (изменение показателей `nr_throttled` и `throttled_usec`).
 ![Throttling.png](Images/Part3/Throttling.png)
 
 Запускаем форк-бомбу командой: 
