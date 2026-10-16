@@ -20,6 +20,40 @@
 ![ProcessStatus](Images/Part1/ProcessStatus.png)
 
 ## Часть 2 — namespaces
+Ранее запускали апи одной командой `dotnet run --project LabApi`. Теперь отдельно соберём апи командой `dotnet build LabApi` и получим `LabApi.dll`
+
+Далее изолированно (изолируем видимость некоторых вещей) меняем имя хоста, поднимаем интерфейс `lo` и запускаем апи командой:
+
+```
+unshare \
+  --pid --fork \
+  --mount --mount-proc \
+  --net \
+  --uts \
+  --ipc \
+  --user --map-root-user \
+  bash -c '
+    hostname lab-container &&
+    ip link set lo up &&
+    exec dotnet LabApi/bin/Debug/net10.0/LabApi.dll --urls http://localhost:5232
+  '
+```
+
+Команда изолирует шесть пространств имён:
+* `pid` — API получает PID 1 и не видит процессы вне своего namespace;
+* `mount` — создаётся отдельная таблица монтирований и свой `/proc`; файлы хоста остаются доступны;
+* `net` — интерфейсы и маршруты хоста недоступны, внутри есть только включённый `lo`;
+* `uts` — внутри используется своё имя хоста `lab-container`;
+* `ipc` — изолированы System V IPC и очереди сообщений POSIX;
+* `user` — root внутри соответствует обычному пользователю снаружи и не получает права root на хосте.
+
+Процесс апи снаружи пространства имеет: PID 520, PPID 519 и UID 1000.
+![OutsideProcess.png](Images/Part2/OutsideProcess.png)
+
+Заходим внутрь через `sudo nsenter --target 520 --pid --mount --net --uts --ipc --user bash`.
+
+Тот же процесс внутри имеет: PID 1, PPID 0 и UID 0. Также внутри не видно сторонних процессов, другое имя хоста, в сети только `lo` и UID 0, которому принадлежит процесс, снаружи соответствует UID 1000. Изоляция видимости действительно есть.
+![InsideProcess.png](Images/Part2/InsideProcess.png)
 
 ## Часть 3 — cgroups
 
