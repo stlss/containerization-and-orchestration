@@ -136,6 +136,35 @@ Capabilities ограничивают право выполнять админи
 Seccomp ограничивает доступные системные вызовы. Запрет getpid() приводит к завершению процесса с SIGSYS.
 
 ## Часть 5 — Собери свой Docker
+Объединили namespaces, cgroup-лимиты и сброс capabilities в один скрипт [mydocker.sh](mydocker.sh), который запускает апи. Скрипт запускатеся из корня репозитория. Запускаем наш скрипт и шлём запрос. По логам видно, что запрос пришёл и был обработан.
+
+![MyDockerRun.png](Images/Part5/MyDockerRun.png)
+
+![HealthRequest1.png](Images/Part5/HealthRequest1.png)
+
+Запускаем апи через докер, предварительно собрав его:
+```bash
+dotnet build LabSolution/LabApi --configuration Debug
+
+docker run --rm -it \
+  --name lab-api-docker \
+  --hostname lab-container \
+  --memory=256m \
+  --memory-swap=256m \
+  --cpus=0.5 \
+  --pids-limit=64 \
+  --cap-drop=ALL \
+  --security-opt no-new-privileges=true \
+  -p 5232:8080 \
+  -v "$PWD/LabSolution/LabApi/bin/Debug/net10.0:/app:ro" \
+  -w /app \
+  mcr.microsoft.com/dotnet/aspnet:10.0 \
+  dotnet LabApi.dll --urls http://0.0.0.0:8080
+```
+
+![DockerRun.png](Images/Part5/DockerRun.png)
+
+![HealthRequest2.png](Images/Part5/HealthRequest2.png)
 
 ## Часть 6 — Образы
 
