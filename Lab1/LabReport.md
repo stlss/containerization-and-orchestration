@@ -106,6 +106,34 @@ sudo bash -c '
 ![ForkBomb.png](Images/Part3/ForkBomb.png)
 
 ## Часть 4 — права
+Следующая команда запускает оболочку без capabilities и запрещает повышение привилегий при выполнении других программ:
+```bash
+setpriv \
+  --bounding-set=-all \
+  --inh-caps=-all \
+  --ambient-caps=-all \
+  --no-new-privs \
+  bash
+```
+
+Создаём неймспейсы `user` и `uts`, запускаем урезанную оболочку, пробуем изменить имя хоста и убеждаемся, что этого сделать нельзя.
+![Capabilities.png](Images/Part4/Capabilities.png)
+
+Запускаем Python-скрипт, который выполняет системный вызов получения PID. Затем создаём временную службу, устанавливающую ограничения на вызов получения PID и запускающую тот же скрипт.
+
+```bash
+python3 -c 'import os; print(os.getpid())'
+
+systemd-run --user --wait --pipe --collect \
+  -p NoNewPrivileges=yes \
+  -p 'SystemCallFilter=~getpid' \
+  python3 -c 'import os; print(os.getpid())'
+```
+
+![Seccomp.png](Images/Part4/Seccomp.png)
+
+Capabilities ограничивают право выполнять административные операции. После сброса CAP_SYS_ADMIN изменение имени хоста запрещено, хотя UID остаётся равным 0.
+Seccomp ограничивает доступные системные вызовы. Запрет getpid() приводит к завершению процесса с SIGSYS.
 
 ## Часть 5 — Собери свой Docker
 
