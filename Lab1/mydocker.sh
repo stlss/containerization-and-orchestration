@@ -34,12 +34,11 @@ exec unshare \
         hostname lab-container
         ip link set lo up
 
-        # Сбрасываем capabilities, запрещаем повышение привилегий и загружаем seccomp-профиль.
+        # Сбрасываем capabilities и запрещаем повышение привилегий при запуске других процессов.
         exec setpriv \
             --bounding-set=-all \
             --inh-caps=-all \
             --ambient-caps=-all \
             --no-new-privs \
-            --seccomp-filter "$1" \
             dotnet bin/Debug/net10.0/LabApi.dll --urls http://localhost:5232
-    ' _ "$SCRIPT_DIR/seccomp-no-mkdir.bpf"
+    '
