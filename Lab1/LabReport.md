@@ -119,21 +119,31 @@ setpriv \
 Создаём неймспейсы `user` и `uts`, запускаем урезанную оболочку, пробуем изменить имя хоста и убеждаемся, что этого сделать нельзя.
 ![Capabilities.png](Images/Part4/Capabilities.png)
 
-Запускаем Python-скрипт, который выполняет системный вызов получения PID. Затем создаём временную службу, устанавливающую ограничения на вызов получения PID и запускающую тот же скрипт.
+Проверяем создание каталога без ограничений, затем загружаем готовый профиль [seccomp-no-mkdir.bpf](seccomp-no-mkdir.bpf), запрещающий `mkdir` и `mkdirat` с ошибкой `EPERM`.
 
-```bash
-python3 -c 'import os; print(os.getpid())'
+```text
+alexander@DESKTOP-L1QCKUA:~$ export SECCOMP_TEST_DIR="$(mktemp -d)"
+mkdir "$SECCOMP_TEST_DIR/probe"
+rmdir "$SECCOMP_TEST_DIR/probe"
 
-systemd-run --user --wait --pipe --collect \
-  -p NoNewPrivileges=yes \
-  -p 'SystemCallFilter=~getpid' \
-  python3 -c 'import os; print(os.getpid())'
+setpriv --no-new-privs --seccomp-filter ./seccomp-no-mkdir.bpf \
+  bash --noprofile --norc
+bash-5.2$ grep -E '^(NoNewPrivs|Seccomp)' /proc/$$/status
+mkdir "$SECCOMP_TEST_DIR/probe"
+NoNewPrivs:     1
+Seccomp:        2
+Seccomp_filters:        1
+mkdir: cannot create directory ‘/tmp/tmp.K6wtiRZgfW/probe’: Operation not permitted
+bash-5.2$ exit
+mkdir "$SECCOMP_TEST_DIR/probe"
+exit
+alexander@DESKTOP-L1QCKUA:~$
 ```
 
-![Seccomp.png](Images/Part4/Seccomp.png)
+`NoNewPrivs: 1` подтверждает запрет повышения привилегий, `Seccomp: 2` — режим фильтрации, `Seccomp_filters: 1` — наличие одного фильтра. Под фильтром каталог не создаётся, после выхода в исходную оболочку — создаётся. Дочерние процессы наследуют фильтр, `exec` его не снимает. Файл `seccomp-no-mkdir.bpf` содержит учебный профиль, запрещающий только создание каталогов через `mkdir` и `mkdirat`.
 
 Capabilities ограничивают право выполнять административные операции. После сброса CAP_SYS_ADMIN изменение имени хоста запрещено, хотя UID остаётся равным 0.
-Seccomp ограничивает доступные системные вызовы. Запрет getpid() приводит к завершению процесса с SIGSYS.
+Seccomp ограничивает доступные системные вызовы. Здесь запрет возвращает `EPERM`, не завершая процесс.
 
 ## Часть 5 — Собери свой Docker
 Объединили namespaces, cgroup-лимиты и сброс capabilities в один скрипт [mydocker.sh](mydocker.sh), который запускает апи. Скрипт запускатеся из корня репозитория. Запускаем наш скрипт и шлём запрос. По логам видно, что запрос пришёл и был обработан.
