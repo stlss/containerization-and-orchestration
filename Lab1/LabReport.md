@@ -56,14 +56,23 @@ unshare \
 ![InsideProcess.png](Images/Part2/InsideProcess.png)
 
 ## Часть 3 — cgroups
-Создаём cgroup `lab-api` и добавляем лимиты на memory — 256 МиБ, cpu — половина ядра, pids — 64 задачи и запрещаем swap данных:
+Смотрим какие контроллеры доступны в корневой группе и какие включены для дочерних групп:
+
+```bash
+cat /sys/fs/cgroup/cgroup.controllers     # cpuset cpu io memory hugetlb pids rdma
+cat /sys/fs/cgroup/cgroup.subtree_control # cpu memory pids
+```
+
+Необходимые контроллеры уже включены. Повторяем команду включения, чтобы последовательность действий не зависела от начального состояния системы:
+```bash
+echo '+cpu +memory +pids' | sudo tee /sys/fs/cgroup/cgroup.subtree_control
+```
+
+Создаём cgroup `lab-api` и добавляем лимиты на memory — 256 МиБ, cpu — половина ядра, pids — 64 задачи (процессы и потоки) и запрещаем swap данных:
 
 ```bash
 CG=/sys/fs/cgroup/lab-api
-
 sudo mkdir -p "$CG"
-
-echo '+cpu +memory +pids' | sudo tee /sys/fs/cgroup/cgroup.subtree_control
 
 echo 268435456 | sudo tee "$CG/memory.max"
 echo '50000 100000' | sudo tee "$CG/cpu.max"
