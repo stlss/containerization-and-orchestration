@@ -1,0 +1,88 @@
+{
+  "capturedAt": "2026-10-19T00:31:01.3484923+05:00",
+  "metrics": [
+    {
+      "query": "container_memory_usage_bytes{name=\"lab-api-monitoring\"}",
+      "value": [
+        1792351862.844,
+        "230862848"
+      ]
+    },
+    {
+      "query": "container_spec_memory_limit_bytes{name=\"lab-api-monitoring\"}",
+      "value": [
+        1792351864.743,
+        "268435456"
+      ]
+    },
+    {
+      "query": "lab_api:memory_limit_ratio",
+      "value": [
+        1792351866.589,
+        "0.8600311279296875"
+      ]
+    },
+    {
+      "query": "lab_api:cpu_limit_ratio",
+      "value": [
+        1792351871.772,
+        "0.9333222647253202"
+      ]
+    },
+    {
+      "query": "lab_api:cpu_throttled_periods_ratio",
+      "value": [
+        1792351873.614,
+        "1"
+      ]
+    },
+    {
+      "query": "container_cpu_cfs_throttled_seconds_total{name=\"lab-api-monitoring\"}",
+      "value": [
+        1792351875.457,
+        "482.915754"
+      ]
+    }
+  ],
+  "alerts": [
+    {
+      "labels": {
+        "alertname": "LabApiMemoryNearLimit",
+        "severity": "warning"
+      },
+      "annotations": {
+        "description": "Мало запаса памяти: дальнейшие выделения могут привести к OOM и остановке API.",
+        "summary": "API использует больше 80% лимита памяти"
+      },
+      "state": "firing",
+      "activeAt": "2026-10-18T19:29:47.912239873Z",
+      "value": "8.600311279296875e-01"
+    },
+    {
+      "labels": {
+        "alertname": "LabApiCpuNearLimit",
+        "severity": "warning"
+      },
+      "annotations": {
+        "description": "Приложение близко к пределу CPU; при росте нагрузки возможны задержки и тайм-ауты.",
+        "summary": "API использует больше 90% CPU-квоты"
+      },
+      "state": "pending",
+      "activeAt": "2026-10-18T19:31:02.912239873Z",
+      "value": "9.336971549588438e-01"
+    },
+    {
+      "labels": {
+        "alertname": "LabApiCpuThrottling",
+        "severity": "warning"
+      },
+      "annotations": {
+        "description": "Группа исчерпывает квоту CPU: выполнение принудительно приостанавливается, что увеличивает задержки.",
+        "summary": "Throttling более чем в 20% периодов CPU"
+      },
+      "state": "firing",
+      "activeAt": "2026-10-18T19:24:42.912239873Z",
+      "value": "1e+00"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+groups:
+  - name: lab-api
+    rules:
+      - record: lab_api:memory_limit_ratio
+        expr: |
+          max(container_memory_usage_bytes{name="lab-api-1"})
+          / max(container_spec_memory_limit_bytes{name="lab-api-1"})
+
+      - record: lab_api:cpu_limit_ratio
+        expr: |
+          sum(rate(container_cpu_usage_seconds_total{name="lab-api-1"}[1m]))
+          / max(container_spec_cpu_quota{name="lab-api-1"} / container_spec_cpu_period{name="lab-api-1"})
+
+      - record: lab_api:cpu_throttled_periods_ratio
+        expr: |
+          sum(rate(container_cpu_cfs_throttled_periods_total{name="lab-api-1"}[1m]))
+          / clamp_min(sum(rate(container_cpu_cfs_periods_total{name="lab-api-1"}[1m])), 0.000001)
+
+      - alert: LabApiMemoryNearLimit
+        expr: lab_api:memory_limit_ratio > 0.8
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "API использует больше 80% лимита памяти"
+          description: "Мало запаса памяти: дальнейшие выделения могут привести к OOM и остановке API."
+
+      - alert: LabApiCpuNearLimit
+        expr: lab_api:cpu_limit_ratio > 0.9
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "API использует больше 90% CPU-квоты"
+          description: "Приложение близко к пределу CPU; при росте нагрузки возможны задержки и тайм-ауты."
+
+      - alert: LabApiCpuThrottling
+        expr: lab_api:cpu_throttled_periods_ratio > 0.2
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Throttling более чем в 20% периодов CPU"
+          description: "Группа исчерпывает квоту CPU: выполнение принудительно приостанавливается, что увеличивает задержки."
