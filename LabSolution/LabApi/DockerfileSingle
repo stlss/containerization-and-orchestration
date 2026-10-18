@@ -1,0 +1,19 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0
+ARG BUILD_CONFIGURATION=Release
+WORKDIR /src
+
+COPY ["Directory.Packages.props", "./"]
+COPY ["LabApi/LabApi.csproj", "LabApi/"]
+COPY ["LabApplication/LabApplication.csproj", "LabApplication/"]
+COPY ["LabDomain/LabDomain.csproj", "LabDomain/"]
+RUN dotnet restore "LabApi/LabApi.csproj"
+
+COPY . .
+WORKDIR /src/LabApi
+RUN dotnet publish "LabApi.csproj" -c "$BUILD_CONFIGURATION" --no-restore -o /app/publish /p:UseAppHost=false
+
+USER $APP_UID
+WORKDIR /app/publish
+ENV ASPNETCORE_HTTP_PORTS=8080
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "LabApi.dll"]
