@@ -1,6 +1,7 @@
 using LabApi.Middlewares;
 using LabApplication.Services;
 using LabDomain.Services;
+using Prometheus;
 
 namespace LabApi;
 
@@ -21,13 +22,19 @@ public static class Program
 
         builder.Services.AddSingleton<ILabService1, LabService1>();
         builder.Services.AddSingleton<ILabService2, LabService2>();
+        builder.Services.AddSingleton<IMetricsService, MetricsService>();
 
         builder.Services.AddSingleton(_ => new HttpClient());
 
         var app = builder.Build();
 
+        app.UseRouting();
+
         app.UseMiddleware<RequestLoggingMiddleware>();
+        app.UseMiddleware<RequestMetricsMiddleware>();
+
         app.MapControllers();
+        app.MapMetrics();
 
         if (app.Environment.IsDevelopment())
         {
