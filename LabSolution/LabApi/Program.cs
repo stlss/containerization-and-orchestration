@@ -20,6 +20,9 @@ public static class Program
         builder.Services.AddSwaggerGen();
 
         builder.Services.AddSingleton<ILabService1, LabService1>();
+        builder.Services.AddSingleton<ILabService2, LabService2>();
+
+        builder.Services.AddSingleton(_ => new HttpClient());
 
         var app = builder.Build();
 
