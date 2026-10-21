@@ -9,11 +9,7 @@ namespace LabApi.Controllers;
 public sealed class LabController2(ILabService2 service) : ControllerBase
 {
     [HttpGet("fail")]
-    public IActionResult Fail()
-    {
-        var errorCount = service.RecordError();
-        return StatusCode(StatusCodes.Status500InternalServerError, new { errorCount });
-    }
+    public void Fail() => service.Fail();
 
     [HttpGet("slow")]
     public async Task<IActionResult> Slow(CancellationToken cancellationToken)
@@ -25,14 +21,18 @@ public sealed class LabController2(ILabService2 service) : ControllerBase
     [HttpGet("load")]
     public async Task<IActionResult> Load(CancellationToken cancellationToken)
     {
-        var healthUri = GetHealthUri();
-        var requestCount = await service.LoadAsync(healthUri, cancellationToken);
+        var requestCounts = await Task.WhenAll(
+            service.LoadAsync(GetUri("/health"), 90, cancellationToken),
+            service.LoadAsync(GetUri("/slow"), 5, cancellationToken),
+            service.LoadAsync(GetUri("/fail"), 5, cancellationToken));
+
+        var requestCount = requestCounts.Sum();
         return Ok(new { requestCount });
     }
 
-    private Uri GetHealthUri() => new(UriHelper.BuildAbsolute(
+    private Uri GetUri(string path) => new(UriHelper.BuildAbsolute(
         Request.Scheme,
         Request.Host,
         Request.PathBase,
-        "/health"));
+        path));
 }

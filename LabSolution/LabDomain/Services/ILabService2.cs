@@ -2,9 +2,9 @@ namespace LabDomain.Services;
 
 public interface ILabService2
 {
-    long RecordError();
+    void Fail();
 
     Task SlowAsync(CancellationToken cancellationToken);
 
-    Task<int> LoadAsync(Uri uri, CancellationToken cancellationToken);
+    Task<int> LoadAsync(Uri uri, int requestCount, CancellationToken cancellationToken);
 }
