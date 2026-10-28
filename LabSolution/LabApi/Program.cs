@@ -11,10 +11,12 @@ public static class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Logging.AddSimpleConsole(options =>
+        builder.Logging.ClearProviders();
+        builder.Logging.AddJsonConsole(options =>
         {
-            options.SingleLine = true;
-            options.TimestampFormat = "[yyyy-MM-dd HH:mm:ss zzz] ";
+            options.IncludeScopes = true;
+            options.UseUtcTimestamp = true;
+            options.TimestampFormat = "yyyy-MM-dd'T'HH:mm:ss.fff'Z'";
         });
 
         builder.Services.AddControllers();

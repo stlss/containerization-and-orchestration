@@ -10,11 +10,16 @@ public sealed class RequestLoggingMiddleware(
     {
         var startedAt = Stopwatch.GetTimestamp();
 
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["trace_id"] = Activity.Current?.TraceId.ToHexString(),
+            ["request_id"] = context.TraceIdentifier
+        });
+
         logger.LogInformation(
-            "HTTP {Method} {Path} started. TraceId: {TraceId}",
+            "HTTP {Method} {Path} started.",
             context.Request.Method,
-            context.Request.Path,
-            context.TraceIdentifier);
+            context.Request.Path);
 
         try
         {
@@ -24,11 +29,11 @@ public sealed class RequestLoggingMiddleware(
         {
             logger.LogError(
                 exception,
-                "HTTP {Method} {Path} failed after {ElapsedMs:F2} ms. TraceId: {TraceId}",
+                "HTTP {Method} {Path} failed with {StatusCode} after {ElapsedMs:F2} ms.",
                 context.Request.Method,
                 context.Request.Path,
-                Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds,
-                context.TraceIdentifier);
+                StatusCodes.Status500InternalServerError,
+                Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds);
 
             throw;
         }
@@ -44,11 +49,10 @@ public sealed class RequestLoggingMiddleware(
 
         logger.Log(
             logLevel,
-            "HTTP {Method} {Path} returned {StatusCode} in {ElapsedMs:F2} ms. TraceId: {TraceId}",
+            "HTTP {Method} {Path} returned {StatusCode} in {ElapsedMs:F2} ms.",
             context.Request.Method,
             context.Request.Path,
             statusCode,
-            Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds,
-            context.TraceIdentifier);
+            Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds);
     }
 }
