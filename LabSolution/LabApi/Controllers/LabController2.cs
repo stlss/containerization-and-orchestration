@@ -1,5 +1,4 @@
 using LabDomain.Services;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LabApi.Controllers;
@@ -30,9 +29,16 @@ public sealed class LabController2(ILabService2 service) : ControllerBase
         return Ok(new { requestCount });
     }
 
-    private Uri GetUri(string path) => new(UriHelper.BuildAbsolute(
-        Request.Scheme,
-        Request.Host,
-        Request.PathBase,
-        path));
+    private Uri GetUri(string path)
+    {
+        var localAddress = HttpContext.Connection.LocalIpAddress
+            ?? throw new InvalidOperationException("The local server address is unavailable.");
+
+        var uriBuilder = new UriBuilder(Request.Scheme, localAddress.ToString(), HttpContext.Connection.LocalPort)
+        {
+            Path = $"{Request.PathBase}{path}"
+        };
+
+        return uriBuilder.Uri;
+    }
 }
