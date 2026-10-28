@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lab2-red-dashboard
+data:
+  lab-api-red.json: |
+    {{- .Files.Get "dashboards/lab-api-red.json" | nindent 4 }}
