@@ -4,6 +4,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.18.0"/>
+        <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.18.0"/>
+        <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.18.0"/>
+        <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.18.0"/>
         <PackageVersion Include="prometheus-net" Version="8.2.1"/>
         <PackageVersion Include="prometheus-net.AspNetCore" Version="8.2.1"/>
         <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.3.0"/>

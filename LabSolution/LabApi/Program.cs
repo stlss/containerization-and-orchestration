@@ -1,7 +1,10 @@
 using LabApi.Middlewares;
+using LabApplication.Diagnostics;
 using LabApplication.Services;
 using LabDomain.Services;
 using Prometheus;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 namespace LabApi;
 
@@ -21,6 +24,19 @@ public static class Program
 
         builder.Services.AddControllers();
         builder.Services.AddSwaggerGen();
+
+        builder.Services.AddOpenTelemetry()
+            .ConfigureResource(resource => resource.AddService(
+                builder.Configuration["OTEL_SERVICE_NAME"] ?? "lab-api"))
+            .WithTracing(tracing => tracing
+                .AddSource(LabTelemetry.SourceName)
+                .AddAspNetCoreInstrumentation(options =>
+                {
+                    options.RecordException = true;
+                    options.Filter = context => context.Request.Path != "/metrics";
+                })
+                .AddHttpClientInstrumentation()
+                .AddOtlpExporter());
 
         builder.Services.AddSingleton<ILabService1, LabService1>();
         builder.Services.AddSingleton<ILabService2, LabService2>();
