@@ -76,6 +76,12 @@ grafana:
             timeInterval: 5s
           isDefault: true
           editable: false
+        - name: Loki
+          uid: loki
+          type: loki
+          access: proxy
+          url: http://loki:3100
+          editable: false
   dashboardProviders:
     dashboardproviders.yaml:
       apiVersion: 1
@@ -89,3 +95,75 @@ grafana:
             path: /var/lib/grafana/dashboards/lab2
   dashboardsConfigMaps:
     lab2: lab2-red-dashboard
+
+loki:
+  fullnameOverride: loki
+  deploymentMode: Monolithic
+  loki:
+    auth_enabled: false
+    commonConfig:
+      replication_factor: 1
+    storage:
+      type: filesystem
+    schemaConfig:
+      configs:
+        - from: "2024-04-01"
+          store: tsdb
+          object_store: filesystem
+          schema: v13
+          index:
+            prefix: loki_index_
+            period: 24h
+  singleBinary:
+    replicas: 1
+    sidecar: false
+    persistence:
+      enabled: true
+      size: 2Gi
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+  read:
+    replicas: 0
+  write:
+    replicas: 0
+  backend:
+    replicas: 0
+  gateway:
+    enabled: false
+  lokiCanary:
+    enabled: false
+  chunksCache:
+    enabled: false
+  resultsCache:
+    enabled: false
+  test:
+    enabled: false
+
+alloy:
+  fullnameOverride: alloy
+  crds:
+    create: false
+  controller:
+    type: daemonset
+  alloy:
+    configMap:
+      create: false
+      name: lab2-alloy-config
+      key: config.alloy
+    extraEnv:
+      - name: NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 384Mi

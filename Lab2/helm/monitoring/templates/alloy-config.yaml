@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lab2-alloy-config
+data:
+  config.alloy: |
+    {{- .Files.Get "config/alloy.alloy" | nindent 4 }}

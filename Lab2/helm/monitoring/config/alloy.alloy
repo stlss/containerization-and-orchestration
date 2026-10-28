@@ -1,0 +1,69 @@
+discovery.kubernetes "api_pods" {
+  role = "pod"
+
+  namespaces {
+    names = ["lab2"]
+  }
+
+  selectors {
+    role  = "pod"
+    label = "app.kubernetes.io/instance=lab-api"
+    field = "spec.nodeName=" + sys.env("NODE_NAME")
+  }
+}
+
+discovery.relabel "api_logs" {
+  targets = discovery.kubernetes.api_pods.targets
+
+  rule {
+    source_labels = ["__meta_kubernetes_namespace"]
+    target_label  = "namespace"
+  }
+
+  rule {
+    source_labels = ["__meta_kubernetes_pod_name"]
+    target_label  = "pod"
+  }
+
+  rule {
+    source_labels = ["__meta_kubernetes_pod_container_name"]
+    target_label  = "container"
+  }
+
+  rule {
+    target_label = "job"
+    replacement  = "lab-api"
+  }
+}
+
+loki.source.kubernetes "api_logs" {
+  targets    = discovery.relabel.api_logs.output
+  forward_to = [loki.process.api_logs.receiver]
+}
+
+loki.process "api_logs" {
+  stage.json {
+    expressions = {
+      level = "LogLevel",
+    }
+  }
+
+  stage.template {
+    source   = "level"
+    template = "{{ if eq .Value \"Information\" }}info{{ else if eq .Value \"Warning\" }}warn{{ else }}{{ ToLower .Value }}{{ end }}"
+  }
+
+  stage.labels {
+    values = {
+      level = "",
+    }
+  }
+
+  forward_to = [loki.write.local.receiver]
+}
+
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
