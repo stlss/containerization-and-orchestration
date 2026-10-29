@@ -11,5 +11,8 @@ dependencies:
 - name: alloy
   repository: https://grafana.github.io/helm-charts
   version: 1.14.3
-digest: sha256:ea4b8c3d499d96a9ebe8fb8ae1756cb29056c948e49978a34802597b395bae80
-generated: "2026-10-29T01:02:26.649698086+05:00"
+- name: jaeger
+  repository: https://jaegertracing.github.io/helm-charts
+  version: 4.16.1
+digest: sha256:794a192c2684d2d0a37ae840b5b3cdf11b83fa7b9c21091e8eee912ab99d075b
+generated: "2026-10-29T01:52:32.619617074+05:00"

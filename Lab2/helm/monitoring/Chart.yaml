@@ -1,8 +1,8 @@
 apiVersion: v2
 name: lab-monitoring
-description: Metrics and logs for Lab 2
+description: Metrics, logs and traces for Lab 2
 type: application
-version: 0.2.0
+version: 0.3.0
 dependencies:
   - name: prometheus
     version: 29.37.0
@@ -16,3 +16,6 @@ dependencies:
   - name: alloy
     version: 1.14.3
     repository: https://grafana.github.io/helm-charts
+  - name: jaeger
+    version: 4.16.1
+    repository: https://jaegertracing.github.io/helm-charts

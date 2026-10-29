@@ -82,6 +82,19 @@ grafana:
           access: proxy
           url: http://loki:3100
           editable: false
+          jsonData:
+            derivedFields:
+              - name: TraceID
+                matcherRegex: '"trace_id"\s*:\s*"([0-9a-f]{32})"'
+                datasourceUid: jaeger
+                url: '$${__value.raw}'
+                urlDisplayLabel: View trace
+        - name: Jaeger
+          uid: jaeger
+          type: jaeger
+          access: proxy
+          url: http://jaeger:16686
+          editable: false
   dashboardProviders:
     dashboardproviders.yaml:
       apiVersion: 1
@@ -143,6 +156,51 @@ loki:
     enabled: false
   test:
     enabled: false
+
+jaeger:
+  fullnameOverride: jaeger
+  jaeger:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: "1"
+        memory: 512Mi
+  userconfig:
+    service:
+      extensions: [jaeger_storage, jaeger_query, healthcheckv2]
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [jaeger_storage_exporter]
+    extensions:
+      healthcheckv2:
+        use_v2: true
+        http:
+          endpoint: 0.0.0.0:13133
+      jaeger_query:
+        storage:
+          traces: memory
+      jaeger_storage:
+        backends:
+          memory:
+            memory:
+              max_traces: 10000
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+    processors:
+      batch: {}
+    exporters:
+      jaeger_storage_exporter:
+        trace_storage: memory
 
 alloy:
   fullnameOverride: alloy

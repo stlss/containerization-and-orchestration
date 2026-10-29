@@ -27,6 +27,12 @@ spec:
           env:
             - name: ASPNETCORE_HTTP_PORTS
               value: "8080"
+            - name: OTEL_SERVICE_NAME
+              value: {{ .Values.telemetry.serviceName | quote }}
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: {{ .Values.telemetry.endpoint | quote }}
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: {{ .Values.telemetry.protocol | quote }}
           startupProbe:
             httpGet:
               path: /health

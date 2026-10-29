@@ -8,6 +8,11 @@ image:
 service:
   port: 8080
 
+telemetry:
+  serviceName: lab-api
+  endpoint: http://jaeger:4317
+  protocol: grpc
+
 resources:
   requests:
     cpu: 100m
