@@ -1,0 +1,9 @@
+apiVersion: v2
+name: grafana
+description: Lab 2 configuration for grafana
+type: application
+version: 0.1.0
+dependencies:
+- name: grafana
+  version: 14.0.1
+  repository: https://grafana-community.github.io/helm-charts

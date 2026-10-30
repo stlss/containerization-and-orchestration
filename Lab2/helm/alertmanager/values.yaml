@@ -1,0 +1,41 @@
+alertmanager:
+  podSecurityContext:
+    fsGroup: 65534
+    runAsGroup: 65534
+    runAsNonRoot: true
+    runAsUser: 65534
+  fullnameOverride: alertmanager
+  image:
+    repository: prom/alertmanager
+    tag: v0.34.1
+  persistence:
+    enabled: true
+    size: 128Mi
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+  config:
+    route:
+      receiver: lab-webhook
+      group_by:
+      - service
+      - alertname
+      group_wait: 10s
+      group_interval: 30s
+      repeat_interval: 30m
+    receivers:
+    - name: lab-webhook
+      webhook_configs:
+      - url: http://alert-webhook:8080/alerts
+        send_resolved: true
+    inhibit_rules:
+    - source_matchers:
+      - alertname="ApiUnavailable"
+      target_matchers:
+      - alertname=~"ApiHighErrorRate|ApiHighLatency"
+      equal:
+      - service

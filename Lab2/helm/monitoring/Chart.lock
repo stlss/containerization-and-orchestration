@@ -1,18 +1,27 @@
 dependencies:
 - name: prometheus
-  repository: https://prometheus-community.github.io/helm-charts
-  version: 29.37.0
+  repository: file://../prometheus
+  version: 0.1.0
+- name: alertmanager
+  repository: file://../alertmanager
+  version: 0.1.0
 - name: grafana
-  repository: https://grafana-community.github.io/helm-charts
-  version: 14.0.1
+  repository: file://../grafana
+  version: 0.1.0
 - name: loki
-  repository: https://grafana-community.github.io/helm-charts
-  version: 20.0.2
+  repository: file://../loki
+  version: 0.1.0
 - name: alloy
-  repository: https://grafana.github.io/helm-charts
-  version: 1.14.3
+  repository: file://../alloy
+  version: 0.1.0
 - name: jaeger
-  repository: https://jaegertracing.github.io/helm-charts
-  version: 4.16.1
-digest: sha256:794a192c2684d2d0a37ae840b5b3cdf11b83fa7b9c21091e8eee912ab99d075b
-generated: "2026-10-29T01:52:32.619617074+05:00"
+  repository: file://../jaeger
+  version: 0.1.0
+- name: karma
+  repository: file://../karma
+  version: 0.1.0
+- name: alert-webhook
+  repository: file://../alert-webhook
+  version: 0.1.0
+digest: sha256:19c2ebb730a04e9a1fe0b9a88013fcda9c1c99b7e2c062b8973fd61dbdf99993
+generated: "2026-10-30T21:47:39.316973889+05:00"

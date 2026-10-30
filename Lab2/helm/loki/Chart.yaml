@@ -1,0 +1,9 @@
+apiVersion: v2
+name: loki
+description: Lab 2 configuration for loki
+type: application
+version: 0.1.0
+dependencies:
+- name: loki
+  version: 20.0.2
+  repository: https://grafana-community.github.io/helm-charts

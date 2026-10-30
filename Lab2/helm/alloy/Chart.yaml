@@ -1,0 +1,9 @@
+apiVersion: v2
+name: alloy
+description: Lab 2 configuration for alloy
+type: application
+version: 0.1.0
+dependencies:
+- name: alloy
+  version: 1.14.3
+  repository: https://grafana.github.io/helm-charts

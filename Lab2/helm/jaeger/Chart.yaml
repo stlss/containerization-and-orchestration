@@ -1,0 +1,9 @@
+apiVersion: v2
+name: jaeger
+description: Lab 2 configuration for jaeger
+type: application
+version: 0.1.0
+dependencies:
+- name: jaeger
+  version: 4.16.1
+  repository: https://jaegertracing.github.io/helm-charts

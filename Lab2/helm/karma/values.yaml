@@ -1,0 +1,2 @@
+karma:
+  image: ghcr.io/prymitive/karma:v0.132

@@ -1,0 +1,9 @@
+apiVersion: v2
+name: alertmanager
+description: Lab 2 configuration for alertmanager
+type: application
+version: 0.1.0
+dependencies:
+- name: alertmanager
+  version: 2.1.1
+  repository: https://prometheus-community.github.io/helm-charts

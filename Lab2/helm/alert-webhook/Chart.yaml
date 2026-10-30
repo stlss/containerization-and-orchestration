@@ -1,0 +1,5 @@
+apiVersion: v2
+name: alert-webhook
+description: Lab 2 configuration for alert-webhook
+type: application
+version: 0.1.0
