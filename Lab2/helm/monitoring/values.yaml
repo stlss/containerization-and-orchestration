@@ -1,6 +1,44 @@
 prometheus:
+  configmapReload:
+    prometheus:
+      extraVolumeDirs: [/etc/alerts]
+      extraConfigmapMounts:
+        - name: lab-api-alerts
+          configMap: lab-api-alerts
+          mountPath: /etc/alerts
+          readOnly: true
   alertmanager:
-    enabled: false
+    enabled: true
+    fullnameOverride: alertmanager
+    image:
+      repository: prom/alertmanager
+      tag: v0.34.1
+    persistence:
+      enabled: true
+      size: 128Mi
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 500m
+        memory: 256Mi
+    config:
+      route:
+        receiver: lab-webhook
+        group_by: [service, alertname]
+        group_wait: 10s
+        group_interval: 30s
+        repeat_interval: 30m
+      receivers:
+        - name: lab-webhook
+          webhook_configs:
+            - url: http://alert-webhook:8080/alerts
+              send_resolved: true
+      inhibit_rules:
+        - source_matchers: ['alertname="ApiUnavailable"']
+          target_matchers: ['alertname=~"ApiHighErrorRate|ApiHighLatency"']
+          equal: [service]
   kube-state-metrics:
     enabled: false
   prometheus-node-exporter:
@@ -9,6 +47,14 @@ prometheus:
     enabled: false
   server:
     fullnameOverride: prometheus
+    alertmanagers:
+      - static_configs:
+          - targets: [alertmanager:9093]
+    extraConfigmapMounts:
+      - name: lab-api-alerts
+        configMap: lab-api-alerts
+        mountPath: /etc/alerts
+        readOnly: true
     global:
       scrape_interval: 5s
       scrape_timeout: 4s
@@ -24,6 +70,9 @@ prometheus:
       limits:
         cpu: "1"
         memory: 512Mi
+  serverFiles:
+    prometheus.yml:
+      rule_files: [/etc/alerts/*.yaml]
   scrapeConfigs:
     prometheus:
       enabled: true
@@ -201,6 +250,12 @@ jaeger:
     exporters:
       jaeger_storage_exporter:
         trace_storage: memory
+
+karma:
+  image: ghcr.io/prymitive/karma:v0.132
+
+webhook:
+  image: python:3.14-alpine
 
 alloy:
   fullnameOverride: alloy

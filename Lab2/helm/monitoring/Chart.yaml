@@ -2,7 +2,7 @@ apiVersion: v2
 name: lab-monitoring
 description: Metrics, logs and traces for Lab 2
 type: application
-version: 0.3.0
+version: 0.4.0
 dependencies:
   - name: prometheus
     version: 29.37.0

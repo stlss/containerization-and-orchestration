@@ -1,0 +1,45 @@
+groups:
+  - name: lab-api-critical
+    rules:
+      - alert: ApiUnavailable
+        expr: up{job="lab-api"} == 0 or absent(up{job="lab-api"})
+        for: 1m
+        labels:
+          severity: critical
+          service: lab-api
+        annotations:
+          summary: API недоступен для сбора метрик
+          description: Prometheus не получает метрики API более минуты. Возможна полная недоступность сервиса.
+          action: Проверить Pod, перезапуски, readiness, Service и сеть; восстановить доступность API.
+      - alert: ApiHighErrorRate
+        expr: |
+          (
+            sum(rate(lab_http_errors_total{job="lab-api",route!="/health"}[5m]))
+            /
+            sum(rate(lab_http_requests_total{job="lab-api",route!="/health"}[5m]))
+          ) > 0.10
+          and
+          sum(increase(lab_http_requests_total{job="lab-api",route!="/health"}[5m])) >= 20
+        for: 3m
+        labels:
+          severity: critical
+          service: lab-api
+        annotations:
+          summary: Более 10% запросов API завершаются ошибкой
+          description: Доля 5xx в окне 5 минут превышает 10% минимум 3 минуты при наличии не менее 20 запросов.
+          action: Проверить ошибки в Loki, соответствующие трейсы Jaeger, зависимости и последние изменения.
+      - alert: ApiHighLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le) (rate(lab_http_request_duration_seconds_bucket{job="lab-api",route!="/health"}[5m]))
+          ) > 2
+          and
+          sum(increase(lab_http_requests_total{job="lab-api",route!="/health"}[5m])) >= 20
+        for: 3m
+        labels:
+          severity: critical
+          service: lab-api
+        annotations:
+          summary: p95 времени ответа API превышает 2 секунды
+          description: Порог p95 в окне 5 минут превышен минимум 3 минуты при наличии не менее 20 запросов.
+          action: Проверить медленные трейсы, CPU, память и время ответа зависимостей.

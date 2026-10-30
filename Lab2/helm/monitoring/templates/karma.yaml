@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: karma
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: karma
+  template:
+    metadata:
+      labels:
+        app: karma
+    spec:
+      containers:
+        - name: karma
+          image: {{ .Values.karma.image | quote }}
+          env:
+            - name: ALERTMANAGER_URI
+              value: http://alertmanager:9093
+            - name: ALERTMANAGER_EXTERNAL_URI
+              value: http://localhost:9093
+            - name: ALERTMANAGER_PROXY
+              value: "true"
+            - name: PORT
+              value: "8080"
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: karma
+spec:
+  selector:
+    app: karma
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http

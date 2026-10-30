@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lab-api-alerts
+data:
+  rules.yaml: |
+    {{- .Files.Get "alerts/rules.yaml" | nindent 4 }}
